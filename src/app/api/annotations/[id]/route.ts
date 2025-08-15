@@ -4,6 +4,13 @@ import { authOptions } from '@/lib/auth/config';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+async function getDatabaseConnection() {
+  if (!clientPromise) {
+    throw new Error('Database not available');
+  }
+  return await clientPromise;
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -27,7 +34,7 @@ export async function DELETE(
       );
     }
 
-    const client = await clientPromise;
+    const client = await getDatabaseConnection();
     const annotations = client.db().collection('annotations');
 
     const result = await annotations.deleteOne({ _id: new ObjectId(id) });
@@ -87,7 +94,7 @@ export async function PUT(
       );
     }
 
-    const client = await clientPromise;
+    const client = await getDatabaseConnection();
     const annotations = client.db().collection('annotations');
 
     const result = await annotations.updateOne(

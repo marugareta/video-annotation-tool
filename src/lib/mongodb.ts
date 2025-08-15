@@ -1,28 +1,31 @@
 import { MongoClient } from 'mongodb';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local');
-}
+// Allow build to proceed without MONGODB_URI during static generation
+let uri = '';
+let clientPromise: Promise<MongoClient> | null = null;
 
-const uri = process.env.MONGODB_URI;
-const options = {};
+if (process.env.MONGODB_URI) {
+  uri = process.env.MONGODB_URI;
+  const options = {};
 
-let client;
-let clientPromise: Promise<MongoClient>;
+  let client;
 
-if (process.env.NODE_ENV === 'development') {
-  const globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
+  if (process.env.NODE_ENV === 'development') {
+    const globalWithMongo = global as typeof globalThis & {
+      _mongoClientPromise?: Promise<MongoClient>;
+    };
 
-  if (!globalWithMongo._mongoClientPromise) {
+    if (!globalWithMongo._mongoClientPromise) {
+      client = new MongoClient(uri, options);
+      globalWithMongo._mongoClientPromise = client.connect();
+    }
+    clientPromise = globalWithMongo._mongoClientPromise;
+  } else {
     client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
+    clientPromise = client.connect();
   }
-  clientPromise = globalWithMongo._mongoClientPromise;
 } else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  console.warn('MONGODB_URI not found - database operations will not be available');
 }
 
 export default clientPromise;
