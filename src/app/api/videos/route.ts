@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { getMongoClient } from '@/lib/mongodb';
 import { Video } from '@/types';
-import { put } from '@vercel/blob';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: NextRequest) {
@@ -68,16 +67,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upload to Vercel Blob
+    // For now, we'll store video metadata only
+    // In production, you would upload to a cloud storage service
     const fileExtension = file.name.split('.').pop() || 'mp4';
     const filename = `${uuidv4()}.${fileExtension}`;
     
-    console.log('Uploading video to Vercel Blob:', filename);
-    const blob = await put(filename, file, {
-      access: 'public',
-    });
+    console.log('Processing video upload:', filename);
     
-    console.log('Video uploaded to blob:', blob.url);
+    // Convert file to base64 for storage (for demo purposes)
+    // Note: This is not recommended for large files in production
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    
+    // Check file size (limit to 10MB for demo)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (buffer.length > maxSize) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 10MB.' },
+        { status: 400 }
+      );
+    }
+    
+    // Create data URL for the video
+    const base64 = buffer.toString('base64');
+    const videoUrl = `data:${file.type};base64,${base64}`;
+    
+    console.log('Video processed successfully, size:', buffer.length);
 
     const client = await getMongoClient();
     if (!client) {
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
       title,
       filename,
       originalName: file.name,
-      path: blob.url, // Use blob URL instead of local path
+      path: videoUrl, // Use blob URL or placeholder
       uploadedBy: session.user.id,
       createdAt: new Date(),
     };
