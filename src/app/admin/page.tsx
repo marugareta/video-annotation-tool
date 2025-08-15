@@ -116,6 +116,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteVideo = async (videoId: string, videoTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${videoTitle}"? This will also delete all annotations for this video.`)) return;
+
+    try {
+      const response = await fetch(`/api/videos/${videoId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setSuccess('Video deleted successfully!');
+        fetchVideos();
+        // Clear selected video if it was the one deleted
+        if (selectedVideo && selectedVideo._id === videoId) {
+          setSelectedVideo(null);
+          setAnnotations([]);
+        }
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to delete video');
+      }
+    } catch (error) {
+      setError('An error occurred while deleting video');
+    }
+  };
+
   const exportVideoAnnotations = async (videoId: string, videoTitle: string) => {
     try {
       const response = await fetch(`/api/export?videoId=${videoId}`);
@@ -255,6 +280,12 @@ export default function AdminDashboard() {
                     >
                       Export CSV
                     </button>
+                    <button
+                      onClick={() => handleDeleteVideo(video._id!, video.title)}
+                      className="text-red-600 hover:text-red-800 cursor-pointer text-sm"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -265,72 +296,100 @@ export default function AdminDashboard() {
 
       {selectedVideo && (
         <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Annotations for &quot;{selectedVideo.title}&quot; ({annotations.length})
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Annotations for &quot;{selectedVideo.title}&quot; ({annotations.length})
+            </h2>
+            <button
+              onClick={() => {
+                setSelectedVideo(null);
+                setAnnotations([]);
+              }}
+              className="text-gray-600 hover:text-gray-800 cursor-pointer"
+            >
+              ✕ Close
+            </button>
+          </div>
           
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Label
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {annotations.map((annotation) => (
-                  <tr key={annotation._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatTime(annotation.timestamp)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          annotation.label === 'up'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {annotation.label.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {annotation.username}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(annotation.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleDeleteAnnotation(annotation._id!)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid lg:grid-cols-3 gap-6 mb-6">
+            <div className="lg:col-span-1">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Video Preview</h3>
+              <video
+                src={selectedVideo.path}
+                controls
+                className="w-full aspect-video bg-black rounded"
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Original: {selectedVideo.originalName}
+              </p>
+            </div>
             
-            {annotations.length === 0 && (
-              <div className="text-center py-4 text-gray-500">
-                No annotations found for this video.
+            <div className="lg:col-span-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Annotations</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Time
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Label
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {annotations.map((annotation) => (
+                      <tr key={annotation._id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {formatTime(annotation.timestamp)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              annotation.label === 'up'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {annotation.label.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {annotation.username}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(annotation.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => handleDeleteAnnotation(annotation._id!)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {annotations.length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    No annotations found for this video.
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       )}

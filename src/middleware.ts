@@ -6,7 +6,6 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
-    // Admin only routes
     if (pathname.startsWith('/admin') && token?.role !== 'admin') {
       return NextResponse.redirect(new URL('/videos', req.url));
     }
@@ -18,12 +17,10 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
         
-        // Public routes
         if (pathname === '/' || pathname === '/login' || pathname === '/register') {
           return true;
         }
 
-        // Protected routes require authentication
         return !!token;
       },
     },

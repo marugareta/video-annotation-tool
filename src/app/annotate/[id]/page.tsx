@@ -59,7 +59,17 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
       if (response.ok) {
         const data = await response.json();
         console.log('Annotations fetched:', data);
-        setAnnotations(data);
+        
+        // Filter annotations based on user role
+        let filteredAnnotations = data;
+        if (session?.user.role !== 'admin') {
+          // Non-admin users only see their own annotations
+          filteredAnnotations = data.filter((annotation: AnnotationWithUserInfo) => 
+            annotation.userId === session?.user.id
+          );
+        }
+        
+        setAnnotations(filteredAnnotations);
       } else {
         const errorData = await response.json();
         console.error('Error fetching annotations:', errorData);
@@ -107,14 +117,22 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
 
   const exportAnnotations = async () => {
     try {
-      const response = await fetch(`/api/export?videoId=${videoId}`);
+      // For non-admin users, only export their own annotations
+      const exportUrl = session?.user.role === 'admin' 
+        ? `/api/export?videoId=${videoId}` 
+        : `/api/export?videoId=${videoId}&userId=${session?.user.id}`;
+        
+      const response = await fetch(exportUrl);
       
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `annotations_${video?.title || 'video'}.csv`;
+        const fileName = session?.user.role === 'admin' 
+          ? `annotations_${video?.title || 'video'}.csv`
+          : `my_annotations_${video?.title || 'video'}.csv`;
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -208,7 +226,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">
-              Annotations ({annotations.length})
+              {session?.user.role === 'admin' ? 'All Annotations' : 'My Annotations'} ({annotations.length})
             </h2>
           </div>
 

@@ -7,20 +7,29 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'Unauthorized - Admin access required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(request.url);
     const videoId = searchParams.get('videoId');
+    const userId = searchParams.get('userId');
 
     if (!videoId) {
       return NextResponse.json(
         { error: 'Video ID is required' },
         { status: 400 }
+      );
+    }
+
+    // Non-admin users can only export their own annotations
+    if (session.user.role !== 'admin' && userId && userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Can only export your own annotations' },
+        { status: 403 }
       );
     }
 
@@ -32,8 +41,20 @@ export async function GET(request: NextRequest) {
       );
     }
     
+    // Build match criteria
+    const matchCriteria: { videoId: string; userId?: string } = { videoId };
+    
+    // If userId is specified (for user-specific export), add to match criteria
+    if (userId) {
+      matchCriteria.userId = userId;
+    }
+    // If user is not admin, only show their annotations
+    else if (session.user.role !== 'admin') {
+      matchCriteria.userId = session.user.id;
+    }
+    
     const annotations = await client.db().collection('annotations').aggregate([
-      { $match: { videoId } },
+      { $match: matchCriteria },
       {
         $addFields: {
           userObjectId: { $toObjectId: '$userId' }

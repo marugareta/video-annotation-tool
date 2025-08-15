@@ -50,7 +50,7 @@ export default function Videos() {
   }
 
   if (!session) {
-    return null; // Will redirect to login
+    return null; 
   }
 
   return (

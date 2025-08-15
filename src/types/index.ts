@@ -14,7 +14,7 @@ export interface Video {
   originalName: string;
   path: string;
   duration?: number;
-  uploadedBy: string; // User ID
+  uploadedBy: string; 
   createdAt: Date;
 }
 
@@ -22,7 +22,7 @@ export interface Annotation {
   _id?: string;
   videoId: string;
   userId: string;
-  timestamp: number; // in seconds
+  timestamp: number;
   label: 'up' | 'down';
   createdAt: Date;
 }
