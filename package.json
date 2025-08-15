@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "create-admin": "node scripts/create-admin.js",
-    "postbuild": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
