@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import clientPromise from '@/lib/mongodb';
-import { Annotation, AnnotationWithUserInfo } from '@/types';
-import { ObjectId } from 'mongodb';
+import { getMongoClient } from '@/lib/mongodb';
+import { Annotation } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,7 +27,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
     
     const annotations = await client.db().collection('annotations').aggregate([
       { $match: { videoId } },
@@ -106,7 +111,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
+    
     const annotations = client.db().collection<Annotation>('annotations');
 
     const newAnnotation: Annotation = {

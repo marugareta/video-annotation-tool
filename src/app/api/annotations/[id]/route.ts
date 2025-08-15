@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import clientPromise from '@/lib/mongodb';
+import { getMongoClient } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-
-async function getDatabaseConnection() {
-  if (!clientPromise) {
-    throw new Error('Database not available');
-  }
-  return await clientPromise;
-}
 
 export async function DELETE(
   request: NextRequest,
@@ -34,7 +27,14 @@ export async function DELETE(
       );
     }
 
-    const client = await getDatabaseConnection();
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
+    
     const annotations = client.db().collection('annotations');
 
     const result = await annotations.deleteOne({ _id: new ObjectId(id) });
@@ -94,7 +94,14 @@ export async function PUT(
       );
     }
 
-    const client = await getDatabaseConnection();
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
+    
     const annotations = client.db().collection('annotations');
 
     const result = await annotations.updateOne(

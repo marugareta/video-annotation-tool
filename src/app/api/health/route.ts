@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getMongoClient } from '@/lib/mongodb';
 
 export async function GET() {
   try {
     // Test database connection
-    const client = await clientPromise;
-    await client.db().admin().ping();
+    const client = await getMongoClient();
+    if (client) {
+      await client.db().admin().ping();
+    }
     
     return NextResponse.json({ 
       status: 'OK',
       timestamp: new Date().toISOString(),
-      database: 'Connected',
+      database: client ? 'Connected' : 'Not available',
       version: '1.0.0'
     });
   } catch (error) {

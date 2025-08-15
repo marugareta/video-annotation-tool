@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 
-// Allow build to proceed without MONGODB_URI during static generation
 let uri = '';
 let clientPromise: Promise<MongoClient> | null = null;
 
@@ -24,8 +23,21 @@ if (process.env.MONGODB_URI) {
     client = new MongoClient(uri, options);
     clientPromise = client.connect();
   }
-} else {
-  console.warn('MONGODB_URI not found - database operations will not be available');
 }
 
 export default clientPromise;
+
+// Helper function for API routes
+export async function getMongoClient() {
+  if (!clientPromise) {
+    console.warn('MongoDB connection not available - check MONGODB_URI environment variable');
+    return null;
+  }
+  
+  try {
+    return await clientPromise;
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    return null;
+  }
+}

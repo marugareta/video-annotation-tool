@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import clientPromise from '@/lib/mongodb';
+import { getMongoClient } from '@/lib/mongodb';
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +24,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const client = await clientPromise;
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
     
     const annotations = await client.db().collection('annotations').aggregate([
       { $match: { videoId } },
@@ -62,7 +68,7 @@ export async function GET(request: NextRequest) {
     ]).toArray();
 
     const csvHeaders = 'ID,User ID,Username,Email,Timestamp (seconds),Label,Created At\n';
-    const csvRows = annotations.map(annotation => [
+    const csvRows = annotations.map((annotation) => [
       annotation._id,
       annotation.userId,
       annotation.username,

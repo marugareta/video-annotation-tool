@@ -1,7 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import clientPromise from '../mongodb';
+import { getMongoClient } from '../mongodb';
 import { User } from '@/types';
 
 export const authOptions: NextAuthOptions = {
@@ -18,7 +18,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const client = await clientPromise;
+          const client = await getMongoClient();
+          if (!client) {
+            console.warn('Database not available during authentication');
+            return null;
+          }
+          
           const users = client.db().collection<User>('users');
           
           const user = await users.findOne({ email: credentials.email });
