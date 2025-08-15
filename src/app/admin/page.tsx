@@ -181,7 +181,6 @@ export default function AdminDashboard() {
       )}
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Video Upload */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Upload New Video
@@ -218,14 +217,13 @@ export default function AdminDashboard() {
             <button
               type="submit"
               disabled={uploadLoading}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded-md"
+              className="w-full bg-green-600 hover:bg-green-700 cursor-pointer disabled:bg-green-400 text-white py-2 px-4 rounded-md"
             >
               {uploadLoading ? 'Uploading...' : 'Upload Video'}
             </button>
           </form>
         </div>
 
-        {/* Video List */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Manage Videos ({videos.length})
@@ -247,13 +245,13 @@ export default function AdminDashboard() {
                         setSelectedVideo(video);
                         fetchAnnotations(video._id!);
                       }}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm"
                     >
                       View Annotations
                     </button>
                     <button
                       onClick={() => exportVideoAnnotations(video._id!, video.title)}
-                      className="text-green-600 hover:text-green-800 text-sm"
+                      className="text-green-600 hover:text-green-800 cursor-pointer text-sm"
                     >
                       Export CSV
                     </button>
@@ -265,7 +263,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Annotations Management */}
       {selectedVideo && (
         <div className="mt-8 bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">

@@ -56,7 +56,7 @@ export default function Register() {
   return (
     <div className="max-w-md mx-auto mt-8 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-6 ">
           Register
         </h1>
 
@@ -143,7 +143,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded-md"
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded-md cursor-pointer"
           >
             {isLoading ? 'Registering...' : 'Register'}
           </button>

@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const users = client.db().collection<User>('users');
 
-    // Check if user already exists
     const existingUser = await users.findOne({ 
       $or: [{ email }, { username }] 
     });
@@ -29,10 +28,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
     const newUser: User = {
       email,
       username,

@@ -15,7 +15,6 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
   const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
 
-  // Resolve params
   useEffect(() => {
     params.then((resolvedParams) => {
       setVideoId(resolvedParams.id);
@@ -93,8 +92,8 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
       if (response.ok) {
         const result = await response.json();
         console.log('Annotation created:', result);
-        fetchAnnotations(); // Refresh annotations
-        setError(''); // Clear any previous errors
+        fetchAnnotations();
+        setError(''); 
       } else {
         const errorData = await response.json();
         console.error('Error creating annotation:', errorData);
@@ -160,7 +159,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
         </h1>
         <button
           onClick={() => router.back()}
-          className="text-blue-600 hover:text-blue-800"
+          className="text-blue-600 hover:text-blue-800 cursor-pointer"
         >
           ← Back to Videos
         </button>
@@ -173,7 +172,6 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
       )}
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Video Player */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <video
             ref={videoRef}
@@ -185,13 +183,13 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
           <div className="mt-4 flex gap-4 justify-center">
             <button
               onClick={() => addAnnotation('up')}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold"
+              className="bg-green-600 hover:bg-green-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
             >
               Mark UP
             </button>
             <button
               onClick={() => addAnnotation('down')}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold"
+              className="bg-red-600 hover:bg-red-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
             >
               Mark DOWN
             </button>
@@ -200,14 +198,13 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
           <div className="mt-4 text-center">
             <button
               onClick={exportAnnotations}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white px-4 py-2 rounded"
             >
               Export CSV
             </button>
           </div>
         </div>
 
-        {/* Annotations List */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -251,7 +248,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                           videoRef.current.currentTime = annotation.timestamp;
                         }
                       }}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm"
                     >
                       Jump to
                     </button>

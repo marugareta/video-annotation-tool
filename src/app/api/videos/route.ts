@@ -56,7 +56,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check file type
     if (!file.type.startsWith('video/')) {
       return NextResponse.json(
         { error: 'File must be a video' },
@@ -64,23 +63,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create upload directory if it doesn't exist
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
 
-    // Generate unique filename
     const fileExtension = path.extname(file.name);
     const filename = `${uuidv4()}${fileExtension}`;
     const filepath = path.join(uploadDir, filename);
 
-    // Save file
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     await writeFile(filepath, buffer);
 
-    // Save video metadata to database
     const client = await clientPromise;
     const videos = client.db().collection<Video>('videos');
 
