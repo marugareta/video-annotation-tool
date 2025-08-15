@@ -1,0 +1,267 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { Video, AnnotationWithUserInfo } from '@/types';
+
+export default function AnnotatePage({ params }: { params: Promise<{ id: string }> }) {
+  const { data: session, status } = useSession();
+  const [video, setVideo] = useState<Video | null>(null);
+  const [annotations, setAnnotations] = useState<AnnotationWithUserInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [videoId, setVideoId] = useState<string>('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const router = useRouter();
+
+  // Resolve params
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setVideoId(resolvedParams.id);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+
+    if (status === 'authenticated' && videoId) {
+      fetchVideo();
+      fetchAnnotations();
+    }
+  }, [status, videoId, router]);
+
+  const fetchVideo = async () => {
+    try {
+      const response = await fetch('/api/videos');
+      
+      if (response.ok) {
+        const videos = await response.json();
+        const foundVideo = videos.find((v: Video) => v._id === videoId);
+        setVideo(foundVideo || null);
+      } else {
+        setError('Failed to fetch video');
+      }
+    } catch (error) {
+      setError('An error occurred while fetching video');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAnnotations = async () => {
+    try {
+      console.log('Fetching annotations for videoId:', videoId);
+      const response = await fetch(`/api/annotations?videoId=${videoId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Annotations fetched:', data);
+        setAnnotations(data);
+      } else {
+        const errorData = await response.json();
+        console.error('Error fetching annotations:', errorData);
+        setError('Failed to fetch annotations');
+      }
+    } catch (error) {
+      console.error('Failed to fetch annotations:', error);
+    }
+  };
+
+  const addAnnotation = async (label: 'up' | 'down') => {
+    if (!videoRef.current) return;
+
+    const currentTime = videoRef.current.currentTime;
+    console.log('Adding annotation:', { videoId, timestamp: currentTime, label });
+
+    try {
+      const response = await fetch('/api/annotations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: videoId,
+          timestamp: currentTime,
+          label,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Annotation created:', result);
+        fetchAnnotations(); // Refresh annotations
+        setError(''); // Clear any previous errors
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating annotation:', errorData);
+        setError('Failed to add annotation: ' + (errorData.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error adding annotation:', error);
+      setError('An error occurred while adding annotation');
+    }
+  };
+
+  const exportAnnotations = async () => {
+    try {
+      const response = await fetch(`/api/export?videoId=${videoId}`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `annotations_${video?.title || 'video'}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        setError('Failed to export annotations');
+      }
+    } catch (error) {
+      setError('An error occurred while exporting');
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!session || !video) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-red-600">Video not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {video.title}
+        </h1>
+        <button
+          onClick={() => router.back()}
+          className="text-blue-600 hover:text-blue-800"
+        >
+          ← Back to Videos
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Video Player */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <video
+            ref={videoRef}
+            src={video.path}
+            controls
+            className="w-full aspect-video bg-black rounded"
+          />
+          
+          <div className="mt-4 flex gap-4 justify-center">
+            <button
+              onClick={() => addAnnotation('up')}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              Mark UP
+            </button>
+            <button
+              onClick={() => addAnnotation('down')}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              Mark DOWN
+            </button>
+          </div>
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={exportAnnotations}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              Export CSV
+            </button>
+          </div>
+        </div>
+
+        {/* Annotations List */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Annotations ({annotations.length})
+            </h2>
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            {annotations.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">
+                No annotations yet. Start by marking transitions!
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {annotations.map((annotation) => (
+                  <div
+                    key={annotation._id}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded border"
+                  >
+                    <div>
+                      <span className="font-medium">
+                        {formatTime(annotation.timestamp)}
+                      </span>
+                      <span
+                        className={`ml-2 px-2 py-1 rounded text-sm font-medium ${
+                          annotation.label === 'up'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {annotation.label.toUpperCase()}
+                      </span>
+                      <div className="text-xs text-gray-500 mt-1">
+                        by {annotation.username}
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.currentTime = annotation.timestamp;
+                        }
+                      }}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      Jump to
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
