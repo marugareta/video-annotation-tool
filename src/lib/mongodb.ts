@@ -31,11 +31,15 @@ export default clientPromise;
 export async function getMongoClient() {
   if (!clientPromise) {
     console.warn('MongoDB connection not available - check MONGODB_URI environment variable');
+    console.warn('Current MONGODB_URI status:', !!process.env.MONGODB_URI);
     return null;
   }
   
   try {
-    return await clientPromise;
+    console.log('Attempting MongoDB connection...');
+    const client = await clientPromise;
+    console.log('MongoDB connection successful');
+    return client;
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
     return null;

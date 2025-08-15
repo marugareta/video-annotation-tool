@@ -3,9 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { getMongoClient } from '@/lib/mongodb';
 import { Video } from '@/types';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
+import { put } from '@vercel/blob';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: NextRequest) {
@@ -70,18 +68,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    const fileExtension = path.extname(file.name);
-    const filename = `${uuidv4()}${fileExtension}`;
-    const filepath = path.join(uploadDir, filename);
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
+    // Upload to Vercel Blob
+    const fileExtension = file.name.split('.').pop() || 'mp4';
+    const filename = `${uuidv4()}.${fileExtension}`;
+    
+    console.log('Uploading video to Vercel Blob:', filename);
+    const blob = await put(filename, file, {
+      access: 'public',
+    });
+    
+    console.log('Video uploaded to blob:', blob.url);
 
     const client = await getMongoClient();
     if (!client) {
@@ -97,7 +93,7 @@ export async function POST(request: NextRequest) {
       title,
       filename,
       originalName: file.name,
-      path: `/uploads/${filename}`,
+      path: blob.url, // Use blob URL instead of local path
       uploadedBy: session.user.id,
       createdAt: new Date(),
     };

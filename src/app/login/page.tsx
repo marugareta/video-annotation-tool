@@ -18,23 +18,36 @@ export default function Login() {
     setError('');
 
     try {
+      console.log('Attempting login for:', email);
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
+      console.log('Login result:', result);
+
       if (result?.error) {
+        console.error('Login error:', result.error);
         setError('Invalid credentials');
-      } else {
+      } else if (result?.ok) {
+        console.log('Login successful, getting session...');
         const session = await getSession();
+        console.log('Session after login:', session);
+        
         if (session?.user.role === 'admin') {
+          console.log('Redirecting to admin dashboard');
           router.push('/admin');
         } else {
+          console.log('Redirecting to videos page');
           router.push('/videos');
         }
+      } else {
+        console.error('Unexpected login result:', result);
+        setError('Login failed. Please try again.');
       }
     } catch (error) {
+      console.error('Login exception:', error);
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
