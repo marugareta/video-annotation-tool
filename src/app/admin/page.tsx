@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -192,6 +193,42 @@ export default function AdminDashboard() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const addAnnotation = async (label: 'in_zone' | 'out_of_zone') => {
+    if (!selectedVideo || !videoRef.current) return;
+
+    const currentTime = videoRef.current.currentTime;
+
+    try {
+      const response = await fetch('/api/annotations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId: selectedVideo._id,
+          timestamp: currentTime,
+          label: label,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Annotation created:', result);
+        fetchAnnotations(selectedVideo._id!);
+        fetchAnnotationCounts([selectedVideo]);
+        setSuccess(`Annotation "${label === 'in_zone' ? 'In the Zone' : 'Out of the Zone'}" added at ${formatTime(currentTime)}`);
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating annotation:', errorData);
+        setError('Failed to add annotation: ' + (errorData.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error adding annotation:', error);
+      setError('An error occurred while adding annotation');
+    }
+  };
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -301,12 +338,6 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <Link
-                      href={`/annotate/${video._id}`}
-                      className="text-purple-600 hover:text-purple-800 cursor-pointer text-sm px-2 py-1 border border-purple-200 rounded"
-                    >
-                      Annotate
-                    </Link>
                     <button
                       onClick={() => {
                         setSelectedVideo(video);
@@ -314,7 +345,7 @@ export default function AdminDashboard() {
                       }}
                       className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm px-2 py-1 border border-blue-200 rounded"
                     >
-                      View
+                      View & Annotate
                     </button>
                     <button
                       onClick={() => exportVideoAnnotations(video._id!, video.title)}
@@ -355,22 +386,34 @@ export default function AdminDashboard() {
           
           <div className="grid lg:grid-cols-3 gap-6 mb-6">
             <div className="lg:col-span-1">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-medium text-gray-900">Video Preview</h3>
-                <Link
-                  href={`/annotate/${selectedVideo._id}`}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm"
-                >
-                  Add Annotations
-                </Link>
-              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Video Preview</h3>
               <video
+                ref={videoRef}
                 src={selectedVideo.path}
                 controls
                 className="w-full aspect-video bg-black rounded"
               />
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 mt-2 mb-4">
                 Original: {selectedVideo.originalName}
+              </p>
+              
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => addAnnotation('out_of_zone')}
+                  className="bg-red-600 hover:bg-red-700 cursor-pointer text-white px-4 py-2 rounded-lg font-semibold flex-1"
+                >
+                  Out of the Zone
+                </button>
+                <button
+                  onClick={() => addAnnotation('in_zone')}
+                  className="bg-green-600 hover:bg-green-700 cursor-pointer text-white px-4 py-2 rounded-lg font-semibold flex-1"
+                >
+                  In the Zone
+                </button>
+              </div>
+              
+              <p className="text-xs text-gray-500 text-center mt-2">
+                Click buttons while video is playing to add annotations
               </p>
             </div>
             
@@ -427,7 +470,7 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
                             onClick={() => handleDeleteAnnotation(annotation._id!)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 cursor-pointer"
                           >
                             Delete
                           </button>
