@@ -80,7 +80,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
     }
   };
 
-  const addAnnotation = async (label: 'up' | 'down') => {
+  const addAnnotation = async (label: 'out_of_zone' | 'in_zone') => {
     if (!videoRef.current) return;
 
     const currentTime = videoRef.current.currentTime;
@@ -200,16 +200,16 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
           
           <div className="mt-4 flex gap-4 justify-center">
             <button
-              onClick={() => addAnnotation('up')}
-              className="bg-green-600 hover:bg-green-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
-            >
-              Mark UP
-            </button>
-            <button
-              onClick={() => addAnnotation('down')}
+              onClick={() => addAnnotation('out_of_zone')}
               className="bg-red-600 hover:bg-red-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
             >
-              Mark DOWN
+              Out of the Zone
+            </button>
+            <button
+              onClick={() => addAnnotation('in_zone')}
+              className="bg-green-600 hover:bg-green-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              In the Zone
             </button>
           </div>
 
@@ -248,12 +248,16 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                       </span>
                       <span
                         className={`ml-2 px-2 py-1 rounded text-sm font-medium ${
-                          annotation.label === 'up'
+                          annotation.label === 'in_zone' || annotation.label === 'up'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {annotation.label.toUpperCase()}
+                        {annotation.label === 'in_zone' || annotation.label === 'up' 
+                          ? 'IN THE ZONE' 
+                          : annotation.label === 'out_of_zone' || annotation.label === 'down'
+                          ? 'OUT OF THE ZONE'
+                          : (annotation.label as string).toUpperCase()}
                       </span>
                       <div className="text-xs text-gray-500 mt-1">
                         by {annotation.username}

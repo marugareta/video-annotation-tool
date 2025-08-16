@@ -9,6 +9,7 @@ import { Video } from '@/types';
 export default function Videos() {
   const { data: session, status } = useSession();
   const [videos, setVideos] = useState<Video[]>([]);
+  const [userAnnotationCounts, setUserAnnotationCounts] = useState<{[key: string]: number}>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function Videos() {
     if (status === 'authenticated') {
       fetchVideos();
     }
-  }, [status, router]);
+  }, [status, router, session?.user?.id]);
 
   const fetchVideos = async () => {
     try {
@@ -31,6 +32,10 @@ export default function Videos() {
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
+        // Fetch user's annotation counts for each video
+        if (session?.user?.id) {
+          fetchUserAnnotationCounts(data, session.user.id);
+        }
       } else {
         setError('Failed to fetch videos');
       }
@@ -39,6 +44,26 @@ export default function Videos() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchUserAnnotationCounts = async (videoList: Video[], userId: string) => {
+    const counts: {[key: string]: number} = {};
+    
+    for (const video of videoList) {
+      try {
+        const response = await fetch(`/api/annotations?videoId=${video._id}&userId=${userId}`);
+        if (response.ok) {
+          const annotations = await response.json();
+          counts[video._id!] = annotations.length;
+        } else {
+          counts[video._id!] = 0;
+        }
+      } catch (error) {
+        counts[video._id!] = 0;
+      }
+    }
+    
+    setUserAnnotationCounts(counts);
   };
 
   if (status === 'loading' || isLoading) {
@@ -99,9 +124,20 @@ export default function Videos() {
                 />
               </div>
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {video.title}
-                </h3>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {video.title}
+                  </h3>
+                  {userAnnotationCounts[video._id!] > 0 ? (
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                      {userAnnotationCounts[video._id!]} my annotations
+                    </span>
+                  ) : (
+                    <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+                      Not annotated
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600 mb-4">
                   Uploaded: {new Date(video.createdAt).toLocaleDateString()}
                 </p>
@@ -109,7 +145,7 @@ export default function Videos() {
                   href={`/annotate/${video._id}`}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md inline-block text-center"
                 >
-                  Start Annotating
+                  {userAnnotationCounts[video._id!] > 0 ? 'Continue Annotating' : 'Start Annotating'}
                 </Link>
               </div>
             </div>

@@ -9,6 +9,7 @@ import { Video, AnnotationWithUserInfo } from '@/types';
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const [videos, setVideos] = useState<Video[]>([]);
+  const [videoAnnotationCounts, setVideoAnnotationCounts] = useState<{[key: string]: number}>({});
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [annotations, setAnnotations] = useState<AnnotationWithUserInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +40,8 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
+        // Fetch annotation counts for each video
+        fetchAnnotationCounts(data);
       } else {
         setError('Failed to fetch videos');
       }
@@ -47,6 +50,26 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchAnnotationCounts = async (videoList: Video[]) => {
+    const counts: {[key: string]: number} = {};
+    
+    for (const video of videoList) {
+      try {
+        const response = await fetch(`/api/annotations?videoId=${video._id}`);
+        if (response.ok) {
+          const annotations = await response.json();
+          counts[video._id!] = annotations.length;
+        } else {
+          counts[video._id!] = 0;
+        }
+      } catch (error) {
+        counts[video._id!] = 0;
+      }
+    }
+    
+    setVideoAnnotationCounts(counts);
   };
 
   const fetchAnnotations = async (videoId: string) => {
@@ -258,31 +281,50 @@ export default function AdminDashboard() {
             {videos.map((video) => (
               <div key={video._id} className="p-3 border rounded-lg">
                 <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{video.title}</h3>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-gray-900">{video.title}</h3>
+                      <div className="flex items-center gap-1">
+                        {videoAnnotationCounts[video._id!] > 0 ? (
+                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            {videoAnnotationCounts[video._id!]} annotations
+                          </span>
+                        ) : (
+                          <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+                            No annotations
+                          </span>
+                        )}
+                      </div>
+                    </div>
                     <p className="text-sm text-gray-500">
                       Uploaded: {new Date(video.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Link
+                      href={`/annotate/${video._id}`}
+                      className="text-purple-600 hover:text-purple-800 cursor-pointer text-sm px-2 py-1 border border-purple-200 rounded"
+                    >
+                      Annotate
+                    </Link>
                     <button
                       onClick={() => {
                         setSelectedVideo(video);
                         fetchAnnotations(video._id!);
                       }}
-                      className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm"
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm px-2 py-1 border border-blue-200 rounded"
                     >
-                      View Annotations
+                      View
                     </button>
                     <button
                       onClick={() => exportVideoAnnotations(video._id!, video.title)}
-                      className="text-green-600 hover:text-green-800 cursor-pointer text-sm"
+                      className="text-green-600 hover:text-green-800 cursor-pointer text-sm px-2 py-1 border border-green-200 rounded"
                     >
-                      Export CSV
+                      Export
                     </button>
                     <button
                       onClick={() => handleDeleteVideo(video._id!, video.title)}
-                      className="text-red-600 hover:text-red-800 cursor-pointer text-sm"
+                      className="text-red-600 hover:text-red-800 cursor-pointer text-sm px-2 py-1 border border-red-200 rounded"
                     >
                       Delete
                     </button>
@@ -313,7 +355,15 @@ export default function AdminDashboard() {
           
           <div className="grid lg:grid-cols-3 gap-6 mb-6">
             <div className="lg:col-span-1">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Video Preview</h3>
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-medium text-gray-900">Video Preview</h3>
+                <Link
+                  href={`/annotate/${selectedVideo._id}`}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm"
+                >
+                  Add Annotations
+                </Link>
+              </div>
               <video
                 src={selectedVideo.path}
                 controls
@@ -356,12 +406,16 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 rounded text-xs font-medium ${
-                              annotation.label === 'up'
+                              annotation.label === 'in_zone' || annotation.label === 'up'
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-red-100 text-red-800'
                             }`}
                           >
-                            {annotation.label.toUpperCase()}
+                            {annotation.label === 'in_zone' || annotation.label === 'up' 
+                              ? 'IN THE ZONE' 
+                              : annotation.label === 'out_of_zone' || annotation.label === 'down'
+                              ? 'OUT OF THE ZONE'
+                              : (annotation.label as string).toUpperCase()}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

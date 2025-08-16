@@ -23,7 +23,7 @@ export interface Annotation {
   videoId: string;
   userId: string;
   timestamp: number;
-  label: 'up' | 'down';
+  label: 'up' | 'down' | 'in_zone' | 'out_of_zone';
   createdAt: Date;
 }
 

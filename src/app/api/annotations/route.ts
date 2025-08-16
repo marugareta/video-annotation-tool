@@ -17,8 +17,9 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const videoId = searchParams.get('videoId');
+    const userId = searchParams.get('userId'); // For filtering by specific user
 
-    console.log('GET annotations - videoId:', videoId, 'user:', session.user.id);
+    console.log('GET annotations - videoId:', videoId, 'user:', session.user.id, 'filter userId:', userId);
 
     if (!videoId) {
       return NextResponse.json(
@@ -35,8 +36,16 @@ export async function GET(request: NextRequest) {
       );
     }
     
+    // Build match criteria
+    const matchCriteria: { videoId: string; userId?: string } = { videoId };
+    
+    // If userId is provided, filter by that user
+    if (userId) {
+      matchCriteria.userId = userId;
+    }
+    
     const annotations = await client.db().collection('annotations').aggregate([
-      { $match: { videoId } },
+      { $match: matchCriteria },
       {
         $addFields: {
           userObjectId: { $toObjectId: '$userId' }
@@ -104,9 +113,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['up', 'down'].includes(label)) {
+    if (!['up', 'down', 'in_zone', 'out_of_zone'].includes(label)) {
       return NextResponse.json(
-        { error: 'Label must be "up" or "down"' },
+        { error: 'Label must be "up", "down", "in_zone", or "out_of_zone"' },
         { status: 400 }
       );
     }
@@ -125,7 +134,7 @@ export async function POST(request: NextRequest) {
       videoId,
       userId: session.user.id,
       timestamp: parseFloat(timestamp),
-      label: label as 'up' | 'down',
+      label: label as 'up' | 'down' | 'in_zone' | 'out_of_zone',
       createdAt: new Date(),
     };
 

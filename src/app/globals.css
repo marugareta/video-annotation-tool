@@ -21,6 +21,26 @@
 
 body {
   background: var(--background);
-  color: #212121;
+  color: var(--foreground); /* ✅ Fixed: menggunakan foreground untuk text color */
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Tambahan: Memastikan text selalu readable */
+* {
+  color: inherit;
+}
+
+/* Override untuk memastikan text readable di semua device */
+p, h1, h2, h3, h4, h5, h6, span, div, label, input, button {
+  color: var(--foreground);
+}
+
+/* Khusus untuk components dengan background putih */
+.bg-white {
+  color: #171717 !important;
+}
+
+/* Khusus untuk components dengan background gelap */
+.bg-gray-800, .bg-gray-900, .bg-blue-600, .bg-blue-700 {
+  color: #ffffff !important;
 }
