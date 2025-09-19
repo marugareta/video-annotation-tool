@@ -235,4 +235,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support, please create an issue in the GitHub repository or contact the development team.
+For support, please create an issue in the GitHub repository or contact me :)
+antonius.kri2003@mail.ugm.ac.id
