@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Non-admin users can only export their own annotations
     if (session.user.role !== 'admin' && userId && userId !== session.user.id) {
       return NextResponse.json(
         { error: 'Unauthorized - Can only export your own annotations' },
@@ -41,14 +40,11 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Build match criteria
     const matchCriteria: { videoId: string; userId?: string } = { videoId };
     
-    // If userId is specified (for user-specific export), add to match criteria
     if (userId) {
       matchCriteria.userId = userId;
     }
-    // If user is not admin, only show their annotations
     else if (session.user.role !== 'admin') {
       matchCriteria.userId = session.user.id;
     }

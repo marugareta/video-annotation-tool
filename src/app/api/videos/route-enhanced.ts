@@ -5,7 +5,6 @@ import { getMongoClient } from '@/lib/mongodb';
 import { Video } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
-// Dynamically import Vercel Blob only when available
 async function uploadToVercelBlob(file: File, filename: string) {
   try {
     const { put } = await import('@vercel/blob');
@@ -88,7 +87,6 @@ export async function POST(request: NextRequest) {
     
     let videoUrl: string;
     
-    // Try Vercel Blob first if token is available
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
         console.log('Using Vercel Blob storage');
@@ -96,20 +94,17 @@ export async function POST(request: NextRequest) {
         console.log('Video uploaded to Vercel Blob:', videoUrl);
       } catch (error) {
         console.error('Vercel Blob failed, falling back to base64');
-        // Fall back to base64 if Vercel Blob fails
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         const base64 = buffer.toString('base64');
         videoUrl = `data:${file.type};base64,${base64}`;
       }
     } else {
-      // Use base64 approach when Vercel Blob is not configured
       console.log('Using base64 storage (Vercel Blob not configured)');
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
       
-      // Check file size (limit to 10MB for base64 storage)
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      const maxSize = 10 * 1024 * 1024;
       if (buffer.length > maxSize) {
         return NextResponse.json(
           { error: 'File too large. Maximum size is 10MB. Configure Vercel Blob for larger files.' },

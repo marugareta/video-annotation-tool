@@ -22,8 +22,11 @@
     "multer": "^2.0.2",
     "next": "15.4.6",
     "next-auth": "^4.24.11",
+    "next-i18next": "^15.4.2",
+    "next-intl": "^4.3.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-i18next": "^15.7.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

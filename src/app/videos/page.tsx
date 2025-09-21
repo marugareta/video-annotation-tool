@@ -32,7 +32,6 @@ export default function Videos() {
       if (response.ok) {
         const data = await response.json();
         setVideos(data);
-        // Fetch user's annotation counts for each video
         if (session?.user?.id) {
           fetchUserAnnotationCounts(data, session.user.id);
         }
