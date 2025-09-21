@@ -87,9 +87,9 @@ export async function PUT(
       );
     }
 
-    if (!['up', 'down'].includes(label)) {
+    if (!['change', 'in_zone', 'out_of_zone'].includes(label)) {
       return NextResponse.json(
-        { error: 'Label must be "up" or "down"' },
+        { error: 'Label must be "change", "in_zone", or "out_of_zone"' },
         { status: 400 }
       );
     }
@@ -109,7 +109,7 @@ export async function PUT(
       { 
         $set: { 
           timestamp: parseFloat(timestamp), 
-          label: label as 'up' | 'down' 
+          label: label as 'change' | 'in_zone' | 'out_of_zone' 
         } 
       }
     );

@@ -15,7 +15,6 @@ export async function POST() {
     
     const users = client.db().collection<User>('users');
     
-    // Check if admin already exists
     const existingAdmin = await users.findOne({ email: 'admin@example.com' });
     
     if (existingAdmin) {
@@ -25,7 +24,6 @@ export async function POST() {
       );
     }
     
-    // Create admin user
     const hashedPassword = await bcrypt.hash('admin123', 12);
     
     const adminUser: User = {

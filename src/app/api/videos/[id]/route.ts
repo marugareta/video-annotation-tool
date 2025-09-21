@@ -39,7 +39,6 @@ export async function DELETE(
     const videos = db.collection('videos');
     const annotations = db.collection('annotations');
 
-    // Check if video exists
     const video = await videos.findOne({ _id: new ObjectId(id) });
     if (!video) {
       return NextResponse.json(
@@ -48,11 +47,9 @@ export async function DELETE(
       );
     }
 
-    // Delete all annotations for this video first
     const annotationDeleteResult = await annotations.deleteMany({ videoId: id });
     console.log(`Deleted ${annotationDeleteResult.deletedCount} annotations for video ${id}`);
 
-    // Delete the video
     const videoDeleteResult = await videos.deleteOne({ _id: new ObjectId(id) });
 
     if (videoDeleteResult.deletedCount === 0) {

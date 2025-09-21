@@ -3,7 +3,6 @@ import { getMongoClient } from '@/lib/mongodb';
 
 export async function GET() {
   try {
-    // Test database connection
     const client = await getMongoClient();
     if (client) {
       await client.db().admin().ping();

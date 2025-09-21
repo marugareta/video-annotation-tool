@@ -1,45 +1,51 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function Home() {
   const { data: session } = useSession();
+  const { language, t } = useLanguage();
+  const fallbackName = language === 'ja' ? 'ãƒ¦ãƒ¼ã‚¶ãƒ¼' : 'User';
+  const displayName = session?.user?.name ?? session?.user?.email ?? fallbackName;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Video Annotation Tool
+          {t('home.title')}
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-          Annotate video state transitions with up/down labels
+          {t('home.subtitle')}
         </p>
 
         {!session ? (
           <div className="space-y-4">
             <p className="text-gray-700">
-              Please login or register to start annotating videos.
+              {t('home.loginPrompt')}
             </p>
             <div className="space-x-4">
               <Link
                 href="/login"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-block"
               >
-                Login
+                {t('nav.login')}
               </Link>
               <Link
                 href="/register"
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg inline-block"
               >
-                Register
+                {t('nav.register')}
               </Link>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <p className="text-gray-700">
-              Welcome back, {session.user.name}!
+              {language === 'ja'
+                ? `${displayName}ã•ã‚“ã€ãŠã‹ãˆã‚Šãªã•ã„ï¼`
+                : `Welcome back, ${displayName}!`}
             </p>
             <div className="space-x-4">
               {session.user.role === 'admin' ? (
@@ -48,13 +54,13 @@ export default function Home() {
                     href="/admin"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg inline-block"
                   >
-                    Admin Dashboard
+                    {t('nav.adminDashboard')}
                   </Link>
                   <Link
                     href="/videos"
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-block"
                   >
-                    View Videos
+                    {t('nav.videos')}
                   </Link>
                 </>
               ) : (
@@ -62,7 +68,7 @@ export default function Home() {
                   href="/videos"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-block"
                 >
-                  Start Annotating
+                  {t('home.startAnnotating')}
                 </Link>
               )}
             </div>
@@ -73,25 +79,25 @@ export default function Home() {
       <div className="mt-12 grid md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            For Users
+            {t('home.users.title')}
           </h2>
-          <ul className="space-y-2 text-gray-700">
-            <li>• Select videos to annotate</li>
-            <li>• Mark up/down transitions while watching</li>
-            <li>• Simple click-based annotation system</li>
-            <li>• Export your annotations as CSV</li>
+          <ul className="space-y-2 text-gray-700 list-disc list-inside">
+            <li>{t('home.users.selectVideos')}</li>
+            <li>{t('home.users.markTransitions')}</li>
+            <li>{t('home.users.simple')}</li>
+            <li>{t('home.users.export')}</li>
           </ul>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            For Admins
+            {t('home.admins.title')}
           </h2>
-          <ul className="space-y-2 text-gray-700">
-            <li>• Upload new videos for annotation</li>
-            <li>• View all user annotations</li>
-            <li>• Edit or delete annotations</li>
-            <li>• Export consolidated CSV reports</li>
+          <ul className="space-y-2 text-gray-700 list-disc list-inside">
+            <li>{t('home.admins.upload')}</li>
+            <li>{t('home.admins.viewAnnotations')}</li>
+            <li>{t('home.admins.edit')}</li>
+            <li>{t('home.admins.export')}</li>
           </ul>
         </div>
       </div>

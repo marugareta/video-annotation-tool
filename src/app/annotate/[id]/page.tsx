@@ -60,10 +60,8 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
         const data = await response.json();
         console.log('Annotations fetched:', data);
         
-        // Filter annotations based on user role
         let filteredAnnotations = data;
         if (session?.user.role !== 'admin') {
-          // Non-admin users only see their own annotations
           filteredAnnotations = data.filter((annotation: AnnotationWithUserInfo) => 
             annotation.userId === session?.user.id
           );
@@ -80,7 +78,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
     }
   };
 
-  const addAnnotation = async (label: 'out_of_zone' | 'in_zone') => {
+  const addAnnotation = async (label: 'out_of_zone' | 'in_zone' | 'change') => {
     if (!videoRef.current) return;
 
     const currentTime = videoRef.current.currentTime;
@@ -117,7 +115,6 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
 
   const exportAnnotations = async () => {
     try {
-      // For non-admin users, only export their own annotations
       const exportUrl = session?.user.role === 'admin' 
         ? `/api/export?videoId=${videoId}` 
         : `/api/export?videoId=${videoId}&userId=${session?.user.id}`;
@@ -211,6 +208,12 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
             >
               In the Zone
             </button>
+            <button
+              onClick={() => addAnnotation('change')}
+              className="bg-yellow-600 hover:bg-yellow-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              Change
+            </button>
           </div>
 
           <div className="mt-4 text-center">
@@ -247,23 +250,28 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                         {formatTime(annotation.timestamp)}
                       </span>
                       <span
-                        className={`ml-2 px-2 py-1 rounded text-sm font-medium ${
-                          annotation.label === 'in_zone' || annotation.label === 'up'
+                        className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
+                          annotation.label === 'in_zone'
                             ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                            : annotation.label === 'out_of_zone'
+                            ? 'bg-red-100 text-red-800'
+                            : annotation.label === 'change'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {annotation.label === 'in_zone' || annotation.label === 'up' 
-                          ? 'IN THE ZONE' 
-                          : annotation.label === 'out_of_zone' || annotation.label === 'down'
+                        {annotation.label === 'in_zone'
+                          ? 'IN THE ZONE'
+                          : annotation.label === 'out_of_zone'
                           ? 'OUT OF THE ZONE'
+                          : annotation.label === 'change'
+                          ? 'CHANGE'
                           : (annotation.label as string).toUpperCase()}
                       </span>
                       <div className="text-xs text-gray-500 mt-1">
                         by {annotation.username}
                       </div>
                     </div>
-                    
                     <button
                       onClick={() => {
                         if (videoRef.current) {

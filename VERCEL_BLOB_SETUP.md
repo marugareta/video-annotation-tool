@@ -23,7 +23,6 @@ Replace the current base64 approach in `/src/app/api/videos/route.ts` with:
 ```typescript
 import { put } from '@vercel/blob';
 
-// Replace the base64 section with:
 const blob = await put(filename, file, {
   access: 'public',
 });

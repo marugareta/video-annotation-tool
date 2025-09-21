@@ -67,20 +67,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, we'll store video metadata only
-    // In production, you would upload to a cloud storage service
     const fileExtension = file.name.split('.').pop() || 'mp4';
     const filename = `${uuidv4()}.${fileExtension}`;
     
     console.log('Processing video upload:', filename);
     
-    // Convert file to base64 for storage (for demo purposes)
-    // Note: This is not recommended for large files in production
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    // Check file size (limit to 10MB for demo)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 10 * 1024 * 1024;
     if (buffer.length > maxSize) {
       return NextResponse.json(
         { error: 'File too large. Maximum size is 10MB.' },
@@ -88,7 +83,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create data URL for the video
     const base64 = buffer.toString('base64');
     const videoUrl = `data:${file.type};base64,${base64}`;
     
@@ -108,7 +102,7 @@ export async function POST(request: NextRequest) {
       title,
       filename,
       originalName: file.name,
-      path: videoUrl, // Use blob URL or placeholder
+      path: videoUrl, 
       uploadedBy: session.user.id,
       createdAt: new Date(),
     };

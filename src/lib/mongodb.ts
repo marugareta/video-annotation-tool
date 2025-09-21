@@ -27,7 +27,6 @@ if (process.env.MONGODB_URI) {
 
 export default clientPromise;
 
-// Helper function for API routes
 export async function getMongoClient() {
   if (!clientPromise) {
     console.warn('MongoDB connection not available - check MONGODB_URI environment variable');

@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'jpn'], 
+  },
+
   serverExternalPackages: ['mongodb'],
   
-  // Optimasi untuk production
   images: {
     remotePatterns: [
       {
@@ -12,12 +16,10 @@ const nextConfig = {
     ],
   },
 
-  // Environment variables untuk client
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   },
   
-  // Headers untuk keamanan
   async headers() {
     return [
       {
