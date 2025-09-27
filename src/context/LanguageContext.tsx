@@ -32,6 +32,7 @@ const translations = {
     'home.admins.viewAnnotations': 'View all user annotations',
     'home.admins.edit': 'Edit or delete annotations',
     'home.admins.export': 'Export consolidated CSV reports',
+    'login.title' : 'Login zzzzzz'
   },
   ja: {
     'nav.brand': 'JEPANGGG',
@@ -54,6 +55,7 @@ const translations = {
     'home.admins.viewAnnotations': '???????????????',
     'home.admins.edit': '????????????',
     'home.admins.export': '???????????????',
+    'login.title' : 'ロギン'
   },
 } as const;
 

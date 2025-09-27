@@ -1,5 +1,5 @@
 'use client';
-
+import { useLanguage } from '@/context/LanguageContext';
 import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { language, t } = useLanguage();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,7 +59,7 @@ export default function Login() {
     <div className="max-w-md mx-auto mt-8 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
-          Login
+          {t('login.title')}
         </h1>
 
         {error && (
