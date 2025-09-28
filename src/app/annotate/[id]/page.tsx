@@ -218,14 +218,14 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
             </button>
           </div>
 
-          <div className="mt-4 text-center">
+          {/* <div className="mt-4 text-center">
             <button
               onClick={exportAnnotations}
               className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white px-4 py-2 rounded"
             >
               {t('ann.export-csv')}
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
