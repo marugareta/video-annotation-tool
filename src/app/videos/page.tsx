@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Video } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Videos() {
   const { data: session, status } = useSession();
@@ -13,6 +14,7 @@ export default function Videos() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -68,7 +70,7 @@ export default function Videos() {
   if (status === 'loading' || isLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+        <div className="text-center">    {t('video.loading')}</div>
       </div>
     );
   }
@@ -81,14 +83,14 @@ export default function Videos() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
-          Videos
+           {t('video.videos')}
         </h1>
         {session.user.role === 'admin' && (
           <Link
             href="/admin"
             className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
           >
-            Admin Dashboard
+           {t('video.admin-dashboard')}
           </Link>
         )}
       </div>
@@ -129,22 +131,22 @@ export default function Videos() {
                   </h3>
                   {userAnnotationCounts[video._id!] > 0 ? (
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                      {userAnnotationCounts[video._id!]} my annotations
+                      {userAnnotationCounts[video._id!]} {t('video.my-annotations')}
                     </span>
                   ) : (
                     <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
-                      Not annotated
+                    {t('video.not-annotated')}
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
-                  Uploaded: {new Date(video.createdAt).toLocaleDateString()}
+                    {t('video.uploaded')} {new Date(video.createdAt).toLocaleDateString()}
                 </p>
                 <Link
                   href={`/annotate/${video._id}`}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md inline-block text-center"
                 >
-                  {userAnnotationCounts[video._id!] > 0 ? 'Continue Annotating' : 'Start Annotating'}
+                  {userAnnotationCounts[video._id!] > 0 ? t('video.continue-annotating') : t('video.start-annotating')}
                 </Link>
               </div>
             </div>

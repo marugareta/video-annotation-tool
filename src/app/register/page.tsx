@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 import Link from 'next/link';
 
 export default function Register() {
+  const { language, t } = useLanguage();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -57,7 +59,7 @@ export default function Register() {
     <div className="max-w-md mx-auto mt-8 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center text-gray-900 mb-6 ">
-          Register
+         {t('reg.register')}
         </h1>
 
         {error && (
@@ -69,7 +71,7 @@ export default function Register() {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {t('reg.email')}
             </label>
             <input
               type="email"
@@ -83,7 +85,7 @@ export default function Register() {
 
           <div className="mb-4">
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-              Username
+              {t('reg.username')}
             </label>
             <input
               type="text"
@@ -97,7 +99,7 @@ export default function Register() {
 
           <div className="mb-4">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+               {t('reg.password')}
             </label>
             <input
               type="password"
@@ -112,7 +114,7 @@ export default function Register() {
 
           <div className="mb-4">
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
+               {t('reg.confirm-password')}
             </label>
             <input
               type="password"
@@ -127,7 +129,7 @@ export default function Register() {
 
           <div className="mb-6">
             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-              Role
+              {t('reg.role')}
             </label>
             <select
               id="role"
@@ -145,14 +147,14 @@ export default function Register() {
             disabled={isLoading}
             className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded-md cursor-pointer"
           >
-            {isLoading ? 'Registering...' : 'Register'}
+            {isLoading ?      t('reg.registering') : t('reg.register')}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
+           {t('reg.already-have-account')}{' '}
           <Link href="/login" className="text-blue-600 hover:text-blue-800">
-            Login here
+            {t('reg.login-here')}
           </Link>
         </p>
       </div>

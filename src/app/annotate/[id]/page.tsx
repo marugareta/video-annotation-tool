@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 import { Video, AnnotationWithUserInfo } from '@/types';
 
 export default function AnnotatePage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,6 +15,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
   const [videoId, setVideoId] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -176,7 +178,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
           onClick={() => router.back()}
           className="text-blue-600 hover:text-blue-800 cursor-pointer"
         >
-          ← Back to Videos
+          {t('ann.back-to-videos')}
         </button>
       </div>
 
@@ -200,19 +202,19 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
               onClick={() => addAnnotation('out_of_zone')}
               className="bg-red-600 hover:bg-red-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
             >
-              Out of the Zone
+              {t('ann.out-of-the-zone')}
             </button>
             <button
               onClick={() => addAnnotation('in_zone')}
               className="bg-green-600 hover:bg-green-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
             >
-              In the Zone
+              {t('ann.in-the-zone')}
             </button>
             <button
               onClick={() => addAnnotation('change')}
               className="bg-yellow-600 hover:bg-yellow-700 cursor-pointer text-white px-6 py-3 rounded-lg font-semibold"
             >
-              Change
+              {t('ann.change')}
             </button>
           </div>
 
@@ -221,7 +223,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
               onClick={exportAnnotations}
               className="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white px-4 py-2 rounded"
             >
-              Export CSV
+              {t('ann.export-csv')}
             </button>
           </div>
         </div>
@@ -280,7 +282,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                       }}
                       className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm"
                     >
-                      Jump to
+                      {t('ann.jump-to')}
                     </button>
                   </div>
                 ))}

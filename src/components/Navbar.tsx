@@ -56,14 +56,14 @@ export default function Navbar() {
               onClick={toggleLanguage}
               className="px-3 py-2 border border-white/40 rounded-md text-xs font-semibold tracking-wide hover:bg-white/10 cursor-pointer transition-colors"
             >
-              {language === 'en' ? 'Japan' : 'English'}
+              {language === 'en' ? '日本語' : 'English'}
             </button>
 
             {session ? (
               <>
                 <span className="text-sm">
                   {language === 'ja'
-                    ? `?????${displayName}${roleLabel ? `(${roleLabel})` : ''}`
+                    ? `お帰りなさい, ${displayName}${roleLabel ? `(${roleLabel})` : ''}`
                     : `Welcome, ${displayName}${roleLabel ? ` (${roleLabel})` : ''}`}
                 </span>
                 <button

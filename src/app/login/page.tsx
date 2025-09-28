@@ -71,7 +71,7 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {t('login.email')}
             </label>
             <input
               type="email"
@@ -85,7 +85,7 @@ export default function Login() {
 
           <div className="mb-6">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              {t('login.password')}
             </label>
             <input
               type="password"
@@ -102,14 +102,14 @@ export default function Login() {
             disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 px-4 rounded-md cursor-pointer"
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? t('login.logging-in'): t('login.login')}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Don&apos;t have an account?{' '}
+          {t('login.dont-have-account')}{' '}
           <Link href="/register" className="text-blue-600 hover:text-blue-800">
-            Register here
+            {t('login.register-here')}
           </Link>
         </p>
       </div>
