@@ -37,7 +37,7 @@ const translations = {
     'login.password' : 'Password',
     'login.logging-in' : 'Logging in ...',
     'login.login' : 'Login',
-    'login.dont-have-account' : 'Don&apos;t have an account?',
+    'login.dont-have-account' : 'Don’t have an account?',
     'login.register-here' : 'Register Here',
     'reg.role' : 'Role',
     'reg.register': 'Register',
