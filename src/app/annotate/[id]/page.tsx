@@ -16,6 +16,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
   const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
   const { language, t } = useLanguage();
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -34,6 +35,25 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
       fetchAnnotations();
     }
   }, [status, videoId, router]);
+
+  const handleDeleteAnnotation = async (annotationId: string) => {
+    if (!confirm('Are you sure you want to delete this annotation?')) return;
+
+    try {
+      const response = await fetch(`/api/annotations/${annotationId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setSuccess('Annotation deleted successfully!');
+        fetchAnnotations();
+      } else {
+        setError('Failed to delete annotation');
+      }
+    } catch (error) {
+      setError('An error occurred while deleting annotation');
+    }
+  };
 
   const fetchVideo = async () => {
     try {
@@ -274,16 +294,24 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                         by {annotation.username}
                       </div>
                     </div>
-                    <button
+                   <div>
+                      <button
                       onClick={() => {
                         if (videoRef.current) {
                           videoRef.current.currentTime = annotation.timestamp;
                         }
                       }}
-                      className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm"
-                    >
-                      {t('ann.jump-to')}
-                    </button>
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm mr-2"
+                      >
+                        Jump to
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAnnotation(annotation._id!)}
+                        className="text-red-600 hover:text-red-800 cursor-pointer text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
