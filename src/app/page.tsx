@@ -13,12 +13,12 @@ export default function Home() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        {/* <h1 className="text-4xl font-bold text-gray-900 mb-4">
           {t('home.title')}
         </h1>
         <p className="text-xl text-gray-600 mb-8">
           {t('home.subtitle')}
-        </p>
+        </p> */}
 
         {!session ? (
           <div className="space-y-4">
@@ -76,7 +76,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="mt-12 grid md:grid-cols-2 gap-8">
+      {/* <div className="mt-12 grid md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             {t('home.users.title')}
@@ -100,7 +100,7 @@ export default function Home() {
             <li>{t('home.admins.export')}</li>
           </ul>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
