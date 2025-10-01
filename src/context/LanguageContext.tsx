@@ -64,7 +64,11 @@ const translations = {
     'video.start-annotating' : 'Start Annotating',
     'video.loading' : 'Loading...',
     'video.my-annotations' : 'my annotations',
-    'video.uploaded' : 'Uploaded'
+    'video.uploaded' : 'Uploaded',
+    'ann.asking-delete' : 'Are you sure you want to delete this annotation?',
+    'ann.delete-success' : 'Annotation deleted successfully',
+    'ann.delete-fail' : 'Failed to delete annotation',
+    'ann.delete-error' : 'An error occurred while deleting annotation'
   },
   ja: {
     'nav.brand': '動画アノテーションツール',
@@ -119,7 +123,11 @@ const translations = {
     'video.start-annotating': '注釈を開始',
     'video.loading': '読み込み中...' ,
     'video.my-annotations': '自分の注釈',
-    'video.uploaded': 'アップロード済み'
+    'video.uploaded': 'アップロード済み',
+    'ann.asking-delete' : 'この注釈を削除してもよろしいですか？',
+    'ann.delete-success' : '注釈が正常に削除されました',
+    'ann.delete-fail' : '注釈の削除に失敗しました',
+    'ann.delete-error' : '注釈の削除中にエラーが発生しました'
   },
 } as const;
 

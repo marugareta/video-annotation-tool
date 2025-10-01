@@ -37,7 +37,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
   }, [status, videoId, router]);
 
   const handleDeleteAnnotation = async (annotationId: string) => {
-    if (!confirm('Are you sure you want to delete this annotation?')) return;
+    if (!confirm(t('ann.asking-delete'))) return;
 
     try {
       const response = await fetch(`/api/annotations/${annotationId}`, {
@@ -45,13 +45,13 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
       });
 
       if (response.ok) {
-        setSuccess('Annotation deleted successfully!');
+        setSuccess(t('ann.delete-success'));
         fetchAnnotations();
       } else {
-        setError('Failed to delete annotation');
+        setError(t('ann.delete-fail'));
       }
     } catch (error) {
-      setError('An error occurred while deleting annotation');
+      setError('ann.delete-error');
     }
   };
 
