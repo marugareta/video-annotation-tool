@@ -258,7 +258,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
           <div className="max-h-96 overflow-y-auto">
             {annotations.length === 0 ? (
               <p className="text-gray-500 text-center py-4">
-                No annotations yet. Start by marking transitions!
+                  {t('ann.not-yet-start')}
               </p>
             ) : (
               <div className="space-y-2">
