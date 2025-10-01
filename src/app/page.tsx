@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function Home() {
   const { data: session } = useSession();
   const { language, t } = useLanguage();
-  const fallbackName = language === 'ja' ? 'ãƒ¦ãƒ¼ã‚¶ãƒ¼' : 'User';
+  const fallbackName = language === 'ja' ? 'ユーザー' : 'User';
   const displayName = session?.user?.name ?? session?.user?.email ?? fallbackName;
 
   return (

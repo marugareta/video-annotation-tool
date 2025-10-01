@@ -54,6 +54,7 @@ const translations = {
     'ann.export-csv' : 'Export to CSV',
     'ann.back-to-videos' : '← Back to Videos',
     'ann.jump-to' : 'Jump to',
+    'ann.delete' : 'Delete',
     'ann.my-annotation' : 'My Annotations',
     'video.videos' : 'Videos',
     'video.admin-dashboard' : 'Admin Dashboard',
@@ -108,6 +109,7 @@ const translations = {
     'ann.back-to-videos': '← 動画一覧に戻る',
     'ann.jump-to': 'ジャンプ先',
     'ann.my-annotation': '自分の注釈',
+    'ann.delete' : '削除',
     'video.admin-dashboard': '管理者ダッシュボード',
     'video.videos': 'ビデオ',
     'video.not-annotated': '未注釈',
@@ -142,7 +144,7 @@ const roleLabels = {
   ja: {
     admin: 'admin',
     annotator: 'annotator',
-    user: 'user',
+    user: 'ユーザー',
   },
 } as const satisfies Record<Language, Record<string, string>>;
 

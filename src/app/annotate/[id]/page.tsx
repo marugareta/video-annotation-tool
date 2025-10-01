@@ -251,7 +251,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">
-              {session?.user.role === 'admin' ? 'All Annotations' : 'My Annotations'} ({annotations.length})
+              {session?.user.role === 'admin' ? 'All Annotations' :  t('ann.my-annotation')} ({annotations.length})
             </h2>
           </div>
 
@@ -283,15 +283,15 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                         }`}
                       >
                         {annotation.label === 'in_zone'
-                          ? 'IN THE ZONE'
+                          ? t('ann.in-the-zone')
                           : annotation.label === 'out_of_zone'
-                          ? 'OUT OF THE ZONE'
+                          ? t('ann.out-of-the-zone')
                           : annotation.label === 'change'
-                          ? 'CHANGE'
+                          ? t('ann.change')
                           : (annotation.label as string).toUpperCase()}
                       </span>
                       <div className="text-xs text-gray-500 mt-1">
-                        by {annotation.username}
+                       {annotation.username}
                       </div>
                     </div>
                    <div>
@@ -303,13 +303,13 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
                       }}
                       className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm mr-2"
                       >
-                        Jump to
+                        {t('ann.jump-to')}
                       </button>
                       <button
                         onClick={() => handleDeleteAnnotation(annotation._id!)}
                         className="text-red-600 hover:text-red-800 cursor-pointer text-sm"
                       >
-                        Delete
+                        {t('ann.delete')}
                       </button>
                     </div>
                   </div>
