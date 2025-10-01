@@ -44,7 +44,7 @@ export default function Home() {
           <div className="space-y-4">
             <p className="text-gray-700">
               {language === 'ja'
-                ? `${displayName}ã•ã‚“ã€ãŠã‹ãˆã‚Šãªã•ã„ï¼`
+                ? `ようこそ ${displayName} さん!`
                 : `Welcome back, ${displayName}!`}
             </p>
             <div className="space-x-4">

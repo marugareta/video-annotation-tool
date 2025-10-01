@@ -63,7 +63,7 @@ export default function Navbar() {
               <>
                 <span className="text-sm">
                   {language === 'ja'
-                    ? `お帰りなさい, ${displayName}${roleLabel ? `(${roleLabel})` : ''}`
+                    ? `ようこそ, ${displayName}${roleLabel ? `(${roleLabel})` : ''}`
                     : `Welcome, ${displayName}${roleLabel ? ` (${roleLabel})` : ''}`}
                 </span>
                 <button
