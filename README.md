@@ -228,7 +228,3 @@ The exported CSV contains the following columns:
 2. Verify all environment variables are set
 3. Ensure MongoDB connection is working
 4. Check file permissions for uploads directory
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
