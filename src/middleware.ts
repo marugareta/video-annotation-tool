@@ -6,8 +6,27 @@ export default withAuth(
     const token = req.nextauth.token;
     const pathname = req.nextUrl.pathname;
 
-    if (pathname.startsWith('/admin') && token?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/videos', req.url));
+    if (token) {
+      if (pathname === '/') {
+        const redirectUrl = token.role === 'admin' ? '/admin' : '/videos';
+        return NextResponse.redirect(new URL(redirectUrl, req.url));
+      }
+
+      if (pathname.startsWith('/admin') && token.role !== 'admin') {
+        return NextResponse.redirect(new URL('/videos', req.url));
+      }
+
+      if (pathname === '/login' || pathname === '/register') {
+        const redirectUrl = token.role === 'admin' ? '/admin' : '/videos';
+        return NextResponse.redirect(new URL(redirectUrl, req.url));
+      }
+    }
+
+    if (!token) {
+      if (pathname === '/login' || pathname === '/register') {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL('/login', req.url));
     }
 
     return NextResponse.next();
@@ -17,7 +36,7 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
         
-        if (pathname === '/' || pathname === '/login' || pathname === '/register') {
+        if (pathname === '/login' || pathname === '/register') {
           return true;
         }
 
@@ -29,8 +48,11 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    '/',
     '/admin/:path*',
     '/videos/:path*',
     '/annotate/:path*',
+    '/login',
+    '/register'
   ]
 };

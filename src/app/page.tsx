@@ -2,13 +2,26 @@
 
 import { useLanguage } from '@/context/LanguageContext';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import Link from 'next/link';
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { language, t } = useLanguage();
+  const router = useRouter();
   const fallbackName = language === 'ja' ? 'ユーザー' : 'User';
   const displayName = session?.user?.name ?? session?.user?.email ?? fallbackName;
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      if (session.user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/videos');
+      }
+    }
+  }, [status, session, router]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

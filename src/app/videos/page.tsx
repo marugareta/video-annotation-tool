@@ -48,29 +48,34 @@ export default function Videos() {
   };
 
   const fetchUserAnnotationCounts = async (videoList: Video[], userId: string) => {
-    const counts: {[key: string]: number} = {};
-    
-    for (const video of videoList) {
-      try {
-        const response = await fetch(`/api/annotations?videoId=${video._id}&userId=${userId}`);
-        if (response.ok) {
-          const annotations = await response.json();
-          counts[video._id!] = annotations.length;
-        } else {
-          counts[video._id!] = 0;
-        }
-      } catch (error) {
-        counts[video._id!] = 0;
+    try {
+      const response = await fetch('/api/annotations/counts');
+      if (response.ok) {
+        const counts = await response.json();
+        console.log('Fetched annotation counts:', counts);
+        setUserAnnotationCounts(counts);
+      } else {
+        console.error('Failed to fetch annotation counts:', await response.text());
+        const emptyCounts = videoList.reduce((acc, video) => {
+          acc[video._id!] = 0;
+          return acc;
+        }, {} as {[key: string]: number});
+        setUserAnnotationCounts(emptyCounts);
       }
+    } catch (error) {
+      console.error('Error fetching annotation counts:', error);
+      const emptyCounts = videoList.reduce((acc, video) => {
+        acc[video._id!] = 0;
+        return acc;
+      }, {} as {[key: string]: number});
+      setUserAnnotationCounts(emptyCounts);
     }
-    
-    setUserAnnotationCounts(counts);
   };
 
   if (status === 'loading' || isLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="text-center">    {t('video.loading')}</div>
+        <div className="text-center">{t('video.loading')}</div>
       </div>
     );
   }

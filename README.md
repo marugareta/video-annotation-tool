@@ -232,8 +232,3 @@ The exported CSV contains the following columns:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, please create an issue in the GitHub repository or contact me :)
-antonius.kri2003@mail.ugm.ac.id

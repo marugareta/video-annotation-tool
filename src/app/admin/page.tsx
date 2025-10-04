@@ -53,23 +53,28 @@ export default function AdminDashboard() {
   };
 
   const fetchAnnotationCounts = async (videoList: Video[]) => {
-    const counts: {[key: string]: number} = {};
-    
-    for (const video of videoList) {
-      try {
-        const response = await fetch(`/api/annotations?videoId=${video._id}`);
-        if (response.ok) {
-          const annotations = await response.json();
-          counts[video._id!] = annotations.length;
-        } else {
-          counts[video._id!] = 0;
-        }
-      } catch (error) {
-        counts[video._id!] = 0;
+    try {
+      const response = await fetch('/api/annotations/counts');
+      if (response.ok) {
+        const counts = await response.json();
+        console.log('Admin: Fetched annotation counts:', counts);
+        setVideoAnnotationCounts(counts);
+      } else {
+        console.error('Failed to fetch annotation counts:', await response.text());
+        const emptyCounts = videoList.reduce((acc, video) => {
+          acc[video._id!] = 0;
+          return acc;
+        }, {} as {[key: string]: number});
+        setVideoAnnotationCounts(emptyCounts);
       }
+    } catch (error) {
+      console.error('Error fetching annotation counts:', error);
+      const emptyCounts = videoList.reduce((acc, video) => {
+        acc[video._id!] = 0;
+        return acc;
+      }, {} as {[key: string]: number});
+      setVideoAnnotationCounts(emptyCounts);
     }
-    
-    setVideoAnnotationCounts(counts);
   };
 
   const fetchAnnotations = async (videoId: string) => {
