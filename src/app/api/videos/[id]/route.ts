@@ -4,6 +4,134 @@ import { authOptions } from '@/lib/auth/config';
 import { getMongoClient } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid video ID' },
+        { status: 400 }
+      );
+    }
+
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
+    
+    const db = client.db();
+    const videos = db.collection('videos');
+
+    const video = await videos.findOne({ _id: new ObjectId(id) });
+
+    if (!video) {
+      return NextResponse.json(
+        { error: 'Video not found' },
+        { status: 404 }
+      );
+    }
+
+    const userNote = video.notes?.[session.user.id];
+
+    return NextResponse.json({
+      video: {
+        _id: video._id.toString(),
+        title: video.title,
+        path: video.path,
+      },
+      note: userNote?.text || ''
+    });
+  } catch (error) {
+    console.error('Get video error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const { note } = await request.json();
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid video ID' },
+        { status: 400 }
+      );
+    }
+
+    const client = await getMongoClient();
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
+      );
+    }
+    
+    const db = client.db();
+    const videos = db.collection('videos');
+
+    const result = await videos.updateOne(
+      { _id: new ObjectId(id) },
+      { 
+        $set: { 
+          [`notes.${session.user.id}`]: {
+            text: note,
+            updatedAt: new Date()
+          }
+        } 
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: 'Video not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: 'Note saved successfully'
+    });
+  } catch (error) {
+    console.error('Save note error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -16,6 +16,12 @@ export interface Video {
   duration?: number;
   uploadedBy: string; 
   createdAt: Date;
+  notes?: {
+    [userId: string]: {
+      text: string;
+      updatedAt: Date;
+    };
+  };
 }
 
 export interface Annotation {
@@ -28,6 +34,20 @@ export interface Annotation {
 }
 
 export interface AnnotationWithUserInfo extends Annotation {
+  username?: string;
+  userEmail?: string;
+}
+
+export interface VideoNote {
+  _id?: string;
+  videoId: string;
+  userId: string;
+  note: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface VideoNoteWithUserInfo extends VideoNote {
   username?: string;
   userEmail?: string;
 }

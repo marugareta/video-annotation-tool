@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
-import { Video, AnnotationWithUserInfo } from '@/types';
+import { Video, AnnotationWithUserInfo, VideoNoteWithUserInfo } from '@/types';
 
 export default function AnnotatePage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession();
@@ -13,6 +13,9 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [videoId, setVideoId] = useState<string>('');
+  const [note, setNote] = useState<string>('');
+  const [allNotes, setAllNotes] = useState<VideoNoteWithUserInfo[]>([]);
+  const [isSavingNote, setIsSavingNote] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const router = useRouter();
   const { language, t } = useLanguage();
@@ -33,6 +36,7 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
     if (status === 'authenticated' && videoId) {
       fetchVideo();
       fetchAnnotations();
+      fetchNotes();
     }
   }, [status, videoId, router]);
 
@@ -70,6 +74,84 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
       setError('An error occurred while fetching video');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchNotes = async () => {
+    try {
+      const response = await fetch(`/api/notes?videoId=${videoId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (session?.user.role === 'admin') {
+          setAllNotes(data);
+        } else {
+          setNote(data?.note || '');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch notes:', error);
+    }
+  };
+
+  const saveNote = async () => {
+    if (!note.trim()) {
+      setError('Note cannot be empty');
+      return;
+    }
+
+    setIsSavingNote(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          videoId,
+          note: note.trim()
+        }),
+      });
+
+      if (response.ok) {
+        setSuccess('Note saved successfully!');
+        fetchNotes(); 
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to save note');
+      }
+    } catch (error) {
+      console.error('Error saving note:', error);
+      setError('An error occurred while saving note');
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!confirm(t('ann.asking-delete'))) return;
+
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setSuccess('Note deleted successfully!');
+        fetchNotes();
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to delete note');
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      setError('An error occurred while deleting note');
     }
   };
 
@@ -208,6 +290,12 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
         </div>
       )}
 
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {success}
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <video
@@ -236,6 +324,25 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
             >
               {t('ann.change')}
             </button>
+          </div>
+
+          <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Your Notes / Description:
+            </label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add your notes or description here..."
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[100px] resize-y"
+            />
+            <button
+              onClick={saveNote}
+              disabled={isSavingNote}
+              className="mt-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 cursor-pointer text-white px-6 py-2 rounded-lg font-semibold"
+            >
+                {isSavingNote ? 'Saving...' : 'Save Note'}
+              </button>
           </div>
 
           {/* <div className="mt-4 text-center">
@@ -319,6 +426,57 @@ export default function AnnotatePage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
       </div>
+
+      {session?.user.role === 'admin' && (
+        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            All User Notes ({allNotes.length})
+          </h2>
+          <div className="space-y-4">
+            {allNotes.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">
+                No notes have been saved yet
+              </p>
+            ) : (
+              allNotes.map((noteItem) => (
+                <div
+                  key={noteItem._id}
+                  className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="font-semibold text-gray-900">
+                            {noteItem.username}
+                          </span>
+                          <span className="text-sm text-gray-500 ml-2">
+                            ({noteItem.userEmail})
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-400">
+                            {new Date(noteItem.updatedAt).toLocaleString()}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteNote(noteItem._id!)}
+                            className="text-red-600 hover:text-red-800 cursor-pointer text-sm"
+                          >
+                            {t('ann.delete')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-gray-700 whitespace-pre-wrap mt-2">
+                    {noteItem.note}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

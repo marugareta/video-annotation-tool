@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Video, AnnotationWithUserInfo } from '@/types';
+import { Video, AnnotationWithUserInfo, VideoNoteWithUserInfo } from '@/types';
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [videoAnnotationCounts, setVideoAnnotationCounts] = useState<{[key: string]: number}>({});
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [annotations, setAnnotations] = useState<AnnotationWithUserInfo[]>([]);
+  const [notes, setNotes] = useState<VideoNoteWithUserInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [error, setError] = useState('');
@@ -89,6 +90,44 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       setError('An error occurred while fetching annotations');
+    }
+  };
+
+  const fetchNotes = async (videoId: string) => {
+    try {
+      const response = await fetch(`/api/notes?videoId=${videoId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNotes(data);
+      } else {
+        console.error('Failed to fetch notes');
+      }
+    } catch (error) {
+      console.error('An error occurred while fetching notes');
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setSuccess('Note deleted successfully');
+        // Refresh notes if there's a selected video
+        if (selectedVideo) {
+          fetchNotes(selectedVideo._id!);
+        }
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Failed to delete note');
+      }
+    } catch (error) {
+      setError('An error occurred while deleting note');
     }
   };
 
@@ -345,6 +384,7 @@ export default function AdminDashboard() {
                       onClick={() => {
                         setSelectedVideo(video);
                         fetchAnnotations(video._id!);
+                        fetchNotes(video._id!);
                       }}
                       className="text-blue-600 hover:text-blue-800 cursor-pointer text-sm px-2 py-1 border border-blue-200 rounded"
                     >
@@ -380,6 +420,7 @@ export default function AdminDashboard() {
               onClick={() => {
                 setSelectedVideo(null);
                 setAnnotations([]);
+                setNotes([]);
               }}
               className="text-gray-600 hover:text-gray-800 cursor-pointer"
             >
@@ -501,6 +542,56 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Notes Section */}
+          <div className="mt-8 border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              User Notes ({notes.length})
+            </h3>
+            <div className="space-y-4">
+              {notes.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                  No notes found for this video.
+                </div>
+              ) : (
+                notes.map((note) => (
+                  <div 
+                    key={note._id} 
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-medium text-gray-900">
+                              {note.username}
+                            </span>
+                            <span className="text-sm text-gray-500 ml-2">
+                              ({note.userEmail})
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500">
+                              {new Date(note.createdAt).toLocaleString()}
+                            </span>
+                            <button
+                              onClick={() => handleDeleteNote(note._id!)}
+                              className="text-red-600 hover:text-red-900 cursor-pointer text-sm font-medium"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-gray-700 whitespace-pre-wrap mt-2">
+                      {note.note}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
